@@ -1,5 +1,6 @@
 # Environment variables
 .env
+*.log
 
 # Python
 __pycache__/
