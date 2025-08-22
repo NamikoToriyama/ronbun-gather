@@ -111,7 +111,13 @@ Then update cron entry:
 
 ### Notion API
 1. Create integration at [Notion Integrations](https://www.notion.so/my-integrations)
-2. Create a database with properties: NAME (title), URL (url), Paper (text), Date Added (date), Read (select)
+2. Create a database with properties: 
+   - NAME (title) - Paper title
+   - URL (url) - Paper URL  
+   - Paper (text) - Summary/notes
+   - Date Added (date) - Date added
+   - Read (select) - Reading status
+   - **Keyword (text) - Search keyword used to find this paper**
 3. Share database with your integration
 4. Get database ID from URL and add to `.env`
 
