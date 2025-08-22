@@ -71,6 +71,7 @@ Create a Notion database with these properties for POCs to work:
 | Paper | Text | Summary/notes |
 | Date Added | Date | Date added |
 | Read | Select | Reading status |
+| **Keyword** | **Text** | **Search keyword used to find this paper** |
 
 ## 🔄 Relationship to Main System
 

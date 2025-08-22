@@ -72,6 +72,17 @@ class UpdatedNotionPOC:
                 }
             }
             
+            # 検索キーワードを追加（テスト用）
+            properties["keyword"] = {
+                "rich_text": [
+                    {
+                        "text": {
+                            "content": "test-keyword"
+                        }
+                    }
+                ]
+            }
+            
             if summary:
                 properties["Paper "] = {  # Note the space after Paper
                     "rich_text": [
