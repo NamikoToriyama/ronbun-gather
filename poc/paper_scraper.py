@@ -13,7 +13,7 @@ class PaperScraper:
         }
         
     def search_papers(self, query, num_results=5):
-        """Google Scholarで論文を検索し、詳細情報を取得"""
+        """Search papers from Google Scholar and get detailed information"""
         papers = []
         
         try:
@@ -27,24 +27,24 @@ class PaperScraper:
             for result in results[:num_results]:
                 paper = self.extract_paper_info(result)
                 if paper:
-                    # 詳細情報を取得
+                    # Get detailed information
                     detailed_paper = self.get_paper_details(paper)
                     papers.append(detailed_paper)
                     
-                # レート制限対策
+                # Rate limiting
                 time.sleep(random.uniform(2, 4))
                     
         except Exception as e:
-            print(f"検索エラー: {e}")
+            print(f"Search error: {e}")
             
         return papers
     
     def extract_paper_info(self, result_div):
-        """基本的な論文情報を抽出"""
+        """Extract basic paper information"""
         try:
             paper = {}
             
-            # タイトルと論文リンク
+            # Title and paper link
             title_tag = result_div.find('h3', class_='gs_rt')
             if title_tag:
                 link_tag = title_tag.find('a')
@@ -55,17 +55,17 @@ class PaperScraper:
                     paper['title'] = title_tag.get_text().strip()
                     paper['url'] = ''
             
-            # 著者と出版情報
+            # Authors and publication info
             authors_tag = result_div.find('div', class_='gs_a')
             if authors_tag:
                 paper['authors'] = authors_tag.get_text().strip()
             
-            # 抄録
+            # Abstract/snippet
             snippet_tag = result_div.find('div', class_='gs_rs')
             if snippet_tag:
                 paper['snippet'] = snippet_tag.get_text().strip()
             
-            # 引用数
+            # Citation count
             cited_tag = result_div.find('div', class_='gs_fl')
             if cited_tag:
                 cite_link = cited_tag.find('a')
@@ -73,7 +73,7 @@ class PaperScraper:
                     citations = cite_link.get_text().replace('Cited by ', '')
                     paper['citations'] = citations
             
-            # PDFリンクを探す
+            # Find PDF links
             pdf_links = result_div.find_all('a')
             for link in pdf_links:
                 href = link.get('href', '')
@@ -85,11 +85,11 @@ class PaperScraper:
             return paper if paper.get('title') else None
             
         except Exception as e:
-            print(f"論文情報抽出エラー: {e}")
+            print(f"Paper extraction error: {e}")
             return None
     
     def get_paper_details(self, paper):
-        """論文の詳細情報を取得（abstract、PDF等）"""
+        """Get detailed paper information (abstract, PDF, etc.)"""
         try:
             if not paper.get('url'):
                 return paper
@@ -99,33 +99,33 @@ class PaperScraper:
             
             soup = BeautifulSoup(response.content, 'html.parser')
             
-            # Abstractを探す
+            # Find abstract
             abstract = self.extract_abstract(soup)
             if abstract:
                 paper['abstract'] = abstract
             
-            # より正確なPDFリンクを探す
+            # Find more accurate PDF link
             pdf_url = self.find_pdf_link(soup, paper['url'])
             if pdf_url:
                 paper['pdf_url'] = pdf_url
             
-            # DOIを探す
+            # Find DOI
             doi = self.extract_doi(soup)
             if doi:
                 paper['doi'] = doi
             
-            # 画像を探す
+            # Find images
             images = self.extract_images(soup)
             if images:
                 paper['images'] = images
                 
         except Exception as e:
-            print(f"詳細情報取得エラー: {e}")
+            print(f"Detail retrieval error: {e}")
             
         return paper
     
     def extract_abstract(self, soup):
-        """abstractを抽出"""
+        """Extract abstract"""
         abstract_selectors = [
             'div.abstract',
             'section.abstract', 
@@ -139,10 +139,10 @@ class PaperScraper:
             abstract_tag = soup.select_one(selector)
             if abstract_tag:
                 text = abstract_tag.get_text().strip()
-                if len(text) > 50:  # 十分な長さがあるかチェック
+                if len(text) > 50:  # Check if text is long enough
                     return text
         
-        # metaタグからも探す
+        # Also search in meta tags
         meta_abstract = soup.find('meta', attrs={'name': 'description'})
         if meta_abstract:
             content = meta_abstract.get('content', '')
@@ -152,7 +152,7 @@ class PaperScraper:
         return None
     
     def find_pdf_link(self, soup, base_url):
-        """PDFリンクを探す"""
+        """Find PDF links"""
         pdf_patterns = [
             r'\.pdf$',
             r'\.pdf\?',
@@ -165,7 +165,7 @@ class PaperScraper:
             href = link.get('href')
             text = link.get_text().lower()
             
-            # PDFを示すテキストやURLパターンをチェック
+            # Check for PDF-indicating text or URL patterns
             if 'pdf' in text or any(re.search(pattern, href, re.I) for pattern in pdf_patterns):
                 if href.startswith('http'):
                     return href
@@ -175,13 +175,13 @@ class PaperScraper:
         return None
     
     def extract_doi(self, soup):
-        """DOIを抽出"""
-        # metaタグから
+        """Extract DOI"""
+        # From meta tags
         doi_meta = soup.find('meta', attrs={'name': 'citation_doi'})
         if doi_meta:
             return doi_meta.get('content')
         
-        # テキストから正規表現で
+        # From text using regex
         text = soup.get_text()
         doi_match = re.search(r'10\.\d+/[^\s]+', text)
         if doi_match:
@@ -190,7 +190,7 @@ class PaperScraper:
         return None
     
     def extract_images(self, soup):
-        """論文に関連する画像を抽出"""
+        """Extract paper-related images"""
         images = []
         img_tags = soup.find_all('img')
         
@@ -202,26 +202,25 @@ class PaperScraper:
                 if src.startswith('http'):
                     images.append(src)
                     
-        return images[:3]  # 最大3つまで
+        return images[:3]  # Maximum 3 images
 
 def main():
     scraper = PaperScraper()
     
     query = "typhoon prediction"
-    print(f"検索クエリ: {query}")
     print("=" * 60)
     
     papers = scraper.search_papers(query, num_results=2)
     
     for i, paper in enumerate(papers, 1):
-        print(f"\n{i}. {paper.get('title', 'タイトル不明')}")
-        print(f"著者: {paper.get('authors', '不明')}")
-        print(f"URL: {paper.get('url', 'なし')}")
+        print(f"\n{i}. {paper.get('title', 'Unknown title')}")
+        print(f"Authors: {paper.get('authors', 'Unknown')}")
+        print(f"URL: {paper.get('url', 'None')}")
         
         if paper.get('abstract'):
             print(f"Abstract: {paper['abstract'][:200]}...")
         elif paper.get('snippet'):
-            print(f"概要: {paper['snippet']}")
+            print(f"Snippet: {paper['snippet']}")
             
         if paper.get('pdf_url'):
             print(f"PDF: {paper['pdf_url']}")
@@ -230,12 +229,12 @@ def main():
             print(f"DOI: {paper['doi']}")
             
         if paper.get('images'):
-            print(f"画像: {len(paper['images'])}個見つかりました")
+            print(f"Images: {len(paper['images'])} found")
             for img_url in paper['images']:
                 print(f"  - {img_url}")
                 
         if paper.get('citations'):
-            print(f"引用数: {paper['citations']}")
+            print(f"Citations: {paper['citations']}")
             
         print("-" * 60)
 

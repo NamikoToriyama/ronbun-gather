@@ -19,40 +19,33 @@ class ArxivDeepLPOC:
     
     def search_and_translate(self, query, max_results=3):
         """
-        arXivで論文を検索し、abstractをDeepLで日本語翻訳
+        Search papers from arXiv and translate abstracts using DeepL
         """
-        print(f"🔍 Searching for papers: '{query}'")
         
-        # arXivで検索
+        # Search on arXiv
         papers = self.arxiv_scraper.search_papers(query, max_results)
         
         if not papers:
-            print("❌ No papers found")
             return []
         
-        print(f"✅ Found {len(papers)} papers")
         
-        # 使用状況を確認
+        # Check usage status
         usage = self.translator.get_usage()
         remaining = usage.character.limit - usage.character.count
-        print(f"📊 DeepL usage: {usage.character.count:,} / {usage.character.limit:,} characters")
-        print(f"📊 Remaining: {remaining:,} characters")
         
-        # 各論文のabstractを翻訳
+        # Translate each paper's abstract
         translated_papers = []
         total_chars = 0
         
         for i, paper in enumerate(papers, 1):
-            print(f"\n📄 Processing paper {i}/{len(papers)}: {paper['title'][:50]}...")
             
-            # abstractの文字数をチェック
+            # Check abstract character count
             abstract_chars = len(paper['abstract'])
             if remaining < abstract_chars:
-                print(f"⚠️ Skipping translation (insufficient quota: need {abstract_chars}, have {remaining})")
                 paper['translated_abstract'] = None
                 paper['translation_skipped'] = True
             else:
-                # DeepLで翻訳
+                # Translate with DeepL
                 translated = self.translate_abstract(paper['abstract'])
                 
                 if translated:
@@ -60,29 +53,26 @@ class ArxivDeepLPOC:
                     paper['translation_skipped'] = False
                     total_chars += abstract_chars
                     remaining -= abstract_chars
-                    print(f"✅ Translation completed ({abstract_chars} characters)")
                 else:
                     paper['translated_abstract'] = None
                     paper['translation_skipped'] = True
-                    print("❌ Failed to translate abstract")
             
             translated_papers.append(paper)
         
-        print(f"\n📊 Translation summary: {total_chars:,} characters used")
         return translated_papers
     
     def translate_abstract(self, abstract):
         """
-        AbstractをDeepLで日本語翻訳
+        Translate abstract to Japanese using DeepL
         """
         try:
             if not abstract or len(abstract.strip()) < 10:
                 return None
             
-            # 長すぎる場合は分割（DeepLの制限対策）
+            # Split if too long (DeepL limit)
             max_length = 4000
             if len(abstract) > max_length:
-                # 文の区切りで分割
+                # Split by sentence boundaries
                 sentences = abstract.split('. ')
                 chunks = []
                 current_chunk = ""
@@ -99,7 +89,7 @@ class ArxivDeepLPOC:
                 if current_chunk:
                     chunks.append(current_chunk.strip())
                 
-                # 各チャンクを翻訳
+                # Translate each chunk
                 translated_chunks = []
                 for chunk in chunks:
                     result = self.translator.translate_text(chunk, target_lang="JA")
@@ -111,81 +101,75 @@ class ArxivDeepLPOC:
                 return result.text
             
         except Exception as e:
-            print(f"❌ 翻訳エラー: {e}")
+            print(f"❌ Translation error: {e}")
             return None
     
     def translate_title(self, title):
         """
-        タイトルを翻訳
+        Translate title
         """
         try:
             result = self.translator.translate_text(title, target_lang="JA")
             return result.text
         except Exception as e:
-            print(f"❌ タイトル翻訳エラー: {e}")
+            print(f"❌ Title translation error: {e}")
             return None
     
     def print_results(self, papers):
         """
-        結果を整理して表示
+        Display results in organized format
         """
         print("\n" + "="*80)
-        print("📊 ARXIV + DEEPL 検索・翻訳結果")
+        print("📊 ARXIV + DEEPL Search & Translation Results")
         print("="*80)
         
         for i, paper in enumerate(papers, 1):
-            print(f"\n📄 論文 {i}")
-            print(f"📝 原題: {paper['title']}")
+            print(f"\n📄 Paper {i}")
+            print(f"📝 Original Title: {paper['title']}")
             
-            # タイトル翻訳
+            # Translate title
             translated_title = self.translate_title(paper['title'])
             if translated_title:
-                print(f"🇯🇵 邦題: {translated_title}")
+                print(f"🇯🇵 Japanese Title: {translated_title}")
             
-            print(f"👥 著者: {paper['authors_str']}")
-            print(f"📅 公開日: {paper['published']}")
+            print(f"👥 Authors: {paper['authors_str']}")
+            print(f"📅 Published: {paper['published']}")
             print(f"🔗 arXiv ID: {paper['arxiv_id']}")
             print(f"🌐 URL: {paper['url']}")
             
-            print(f"\n📖 原文Abstract ({len(paper['abstract'])} chars):")
+            print(f"\n📖 Original Abstract ({len(paper['abstract'])} chars):")
             print(paper['abstract'][:200] + "..." if len(paper['abstract']) > 200 else paper['abstract'])
             
             if paper.get('translated_abstract'):
-                print(f"\n🇯🇵 日本語翻訳 ({len(paper['translated_abstract'])} chars):")
+                print(f"\n🇯🇵 Japanese Translation ({len(paper['translated_abstract'])} chars):")
                 print(paper['translated_abstract'])
             elif paper.get('translation_skipped'):
-                print("\n⚠️ 翻訳をスキップしました（文字数制限のため）")
+                print("\n⚠️ Translation skipped (character limit)")
             else:
-                print("\n❌ 翻訳に失敗しました")
+                print("\n❌ Translation failed")
             
             print("-" * 60)
 
 def main():
     """
-    arXiv + DeepL POCのメイン実行
+    Main execution for arXiv + DeepL POC
     """
     try:
-        print("🚀 Starting arXiv + DeepL POC...")
         
-        # POCインスタンス作成
+        # Create POC instance
         poc = ArxivDeepLPOC()
         
-        # 検索クエリ
+        # Search query
         query = "machine learning"
         
-        # 検索と翻訳実行
+        # Execute search and translation
         papers = poc.search_and_translate(query, max_results=2)
         
         if papers:
-            # 結果表示
+            # Display results
             poc.print_results(papers)
             
-            print(f"\n✅ POC completed successfully!")
-            translated_count = len([p for p in papers if p.get('translated_abstract')])
-            print(f"📄 Processed {len(papers)} papers")
-            print(f"🇯🇵 Translated {translated_count} abstracts")
         else:
-            print("❌ No papers found or processed")
     
     except Exception as e:
         print(f"❌ POC failed: {e}")

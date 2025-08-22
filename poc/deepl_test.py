@@ -6,31 +6,31 @@ load_dotenv()
 
 def test_deepl_connection():
     """
-    DeepL API接続をテスト
+    Test DeepL API connection
     """
     try:
-        # APIキーをチェック
+        # Check API key
         api_key = os.getenv('DEEPL_API_KEY')
         if not api_key:
             print("❌ DEEPL_API_KEY is not set in environment variables")
             print("Please add your DeepL API key to .env file:")
             print("DEEPL_API_KEY=your-api-key-here")
-            print("\nDeepL API Key取得方法:")
-            print("1. https://www.deepl.com/pro-api にアクセス")
-            print("2. アカウント作成（無料プランあり）")
-            print("3. API Keyを取得")
+            print("\nHow to get DeepL API Key:")
+            print("1. Visit https://www.deepl.com/pro-api")
+            print("2. Create account (free plan available)")
+            print("3. Get API Key")
             return False
         
-        # DeepL翻訳者を初期化
+        # Initialize DeepL translator
         translator = deepl.Translator(api_key)
         
-        # 使用状況を確認
+        # Check usage status
         usage = translator.get_usage()
         print(f"✅ DeepL connection successful!")
         print(f"📊 Usage: {usage.character.count:,} / {usage.character.limit:,} characters")
         print(f"📊 Remaining: {usage.character.limit - usage.character.count:,} characters")
         
-        # 簡単な翻訳テスト
+        # Simple translation test
         result = translator.translate_text("Hello, world!", target_lang="JA")
         print(f"🔄 Test translation: 'Hello, world!' → '{result.text}'")
         
@@ -44,7 +44,7 @@ def test_deepl_connection():
 
 def translate_text(text, target_lang="JA", source_lang=None):
     """
-    テキストをDeepLで翻訳
+    Translate text using DeepL
     """
     try:
         api_key = os.getenv('DEEPL_API_KEY')
@@ -62,20 +62,20 @@ def translate_text(text, target_lang="JA", source_lang=None):
         return result.text
         
     except Exception as e:
-        print(f"❌ 翻訳エラー: {e}")
+        print(f"❌ Translation error: {e}")
         return None
 
 def translate_abstract(abstract):
     """
-    論文のabstractを日本語に翻訳
+    Translate paper abstract to Japanese
     """
     if not abstract or len(abstract.strip()) < 10:
         return None
     
-    # 長すぎる場合は分割
-    max_length = 4000  # DeepLの制限
+    # Split if too long
+    max_length = 4000  # DeepL limit
     if len(abstract) > max_length:
-        # 文の区切りで分割
+        # Split by sentence boundaries
         sentences = abstract.split('. ')
         chunks = []
         current_chunk = ""
@@ -91,7 +91,7 @@ def translate_abstract(abstract):
         if current_chunk:
             chunks.append(current_chunk.strip())
         
-        # 各チャンクを翻訳
+        # Translate each chunk
         translated_chunks = []
         for chunk in chunks:
             translated = translate_text(chunk)
@@ -108,7 +108,7 @@ def main():
     if test_deepl_connection():
         print("\n🔄 Testing abstract translation...")
         
-        # サンプルabstractで翻訳テスト
+        # Test translation with sample abstract
         sample_abstract = """
         This paper presents a novel approach to typhoon prediction using deep learning models. 
         We propose a new neural network architecture that combines convolutional neural networks (CNNs) 

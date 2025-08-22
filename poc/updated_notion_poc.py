@@ -72,7 +72,7 @@ class UpdatedNotionPOC:
                 }
             }
             
-            # 検索キーワードを追加（テスト用）
+            # Add search keyword (for testing)
             properties["keyword"] = {
                 "rich_text": [
                     {
@@ -136,13 +136,9 @@ class UpdatedNotionPOC:
                 children=children
             )
             
-            print(f"✅ Created page: {title}")
-            print(f"📄 Page ID: {page['id']}")
-            print(f"📄 Abstract added to page content")
             return page
             
         except Exception as e:
-            print(f"❌ Failed to create page: {e}")
             return None
     
     def get_property_names(self):
@@ -162,10 +158,8 @@ def main():
     try:
         notion_poc = UpdatedNotionPOC()
         
-        print("🔄 Getting database info...")
         notion_poc.get_database_info()
         
-        print("\n🔄 Creating a test paper page...")
         test_page = notion_poc.create_paper_page(
             title="Deep Learning for Natural Language Processing",
             authors="Smith, J., Doe, A., Johnson, M.",
@@ -175,10 +169,9 @@ def main():
         )
         
         if test_page:
-            print("\n✅ Updated Notion POC test completed successfully!")
-            print("📝 Check your Notion database to see the new page with abstract in content!")
+            pass
         else:
-            print("\n❌ Test page creation failed")
+            pass
             
     except Exception as e:
         print(f"❌ Error in Updated Notion POC: {e}")
