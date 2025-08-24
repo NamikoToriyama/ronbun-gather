@@ -118,7 +118,30 @@ python main.py
 
 ### Automated Daily Execution
 
-Set up cron (automatic task scheduler) to run the paper collection every day at 9 AM:
+#### Option 1: GitHub Actions (Recommended)
+
+Set up GitHub Actions to run the paper collection automatically every day at 6 PM JST:
+
+1. **Set up GitHub Secrets:**
+   Go to your repository → Settings → Secrets and variables → Actions, and add:
+   - `DEEPL_API_KEY`: Your DeepL API key
+   - `NOTION_TOKEN`: Your Notion integration token
+   - `NOTION_DATABASE_ID`: Your Notion database ID
+   - `LINE_CHANNEL_ACCESS_TOKEN`: Your LINE bot access token
+   - `LINE_USER_ID`: Your LINE user ID
+
+2. **The workflow file is already included** (`.github/workflows/daily-paper-collection.yml`)
+   - Runs every day at 18:00 JST (09:00 UTC)
+   - Can also be triggered manually from GitHub Actions tab
+   - Stores logs as artifacts for 30 days
+
+3. **Enable GitHub Actions:**
+   - Go to your repository → Actions tab
+   - If prompted, enable GitHub Actions for the repository
+
+#### Option 2: Local Cron (Alternative)
+
+Set up cron (automatic task scheduler) to run the paper collection every day at 6 PM:
 
 1. Open crontab (cron configuration):
 ```bash
@@ -127,16 +150,16 @@ crontab -e
 
 2. Add the following line (replace with your actual path):
 ```bash
-0 9 * * * cd /Users/your-username/path/to/ronbun-app && source venv/bin/activate && python main.py
+0 18 * * * cd /Users/your-username/path/to/ronbun-gather && source venv/bin/activate && python main.py
 ```
 
-**Explanation of cron format:** `0 9 * * *`
+**Explanation of cron format:** `0 18 * * *`
 - `0` = minute (0)
-- `9` = hour (9 AM)
+- `18` = hour (6 PM)
 - `*` = any day of month
 - `*` = any month
 - `*` = any day of week
-- **Result: Runs every day at 9:00 AM**
+- **Result: Runs every day at 6:00 PM**
 
 3. Verify cron setup:
 ```bash
@@ -149,7 +172,7 @@ mkdir logs
 ```
 Then update cron entry:
 ```bash
-0 9 * * * cd /Users/your-username/path/to/ronbun-app && source venv/bin/activate && python main.py >> logs/daily.log 2>&1
+0 18 * * * cd /Users/your-username/path/to/ronbun-gather && source venv/bin/activate && python main.py >> logs/daily.log 2>&1
 ```
 
 ## API Setup Guide
